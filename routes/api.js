@@ -25,6 +25,7 @@ let memes = {
 
 router.get('/random-meme', async function(req, res, next) {
   let genre = req.query.g;
+  res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
   
   try {
     const meme_url = memes[genre][(Math.floor(Math.random() * memes[genre].length))];
