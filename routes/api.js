@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
 
+var axios = require("axios");
+
 let memes = {
     coding: [
         "https://github.com/nikrp/nikrp/assets/76831568/341747c4-64c6-4656-8327-f7e49df69731", 
@@ -21,15 +23,36 @@ let memes = {
     ],
 }
 
-router.get('/random-meme', function(req, res, next) {
+router.get('/random-meme', async function(req, res, next) {
   let genre = req.query.g;
   
   try {
     const meme_url = memes[genre][(Math.floor(Math.random() * memes[genre].length))];
-    res.send(meme_url);
+
+    const response = await axios.get(meme_url, { responseType: 'arraybuffer' });
+    
+    if (req.query.url = "false") {
+      if (response.status === 200) {
+        // Set the content type based on the image format (e.g., 'image/jpeg' or 'image/png')
+        res.setHeader('Content-Type', 'image/jpeg'); // Adjust as needed
+  
+        // Send the image data as the response
+        res.send(Buffer.from(response.data, 'binary'));
+      } else {
+        // Handle errors if the image couldn't be fetched
+        res.status(response.status).send('Failed to fetch image');
+      }
+    } else if (res.query.url = "true") {
+      res.send(meme_url);
+    } else {
+      res.status(200);
+      res.setHeader('Content-Type', 'application/json');
+      res.json({ meme_url: meme_url });
+    }
   } catch (e) {
-    res.send("Invalid Meme Genre")
-    console.log(e);
+    res.status(400);
+    res.setHeader('Content-Type', 'application/json');
+    res.json({ meme_url: "Invalid Meme Genre"});
   }
 });
 
